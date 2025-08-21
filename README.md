@@ -1,4 +1,4 @@
-![image info](logo.jpeg)
+[![DelivOps banner](https://raw.githubusercontent.com/delivops/.github/main/images/banner.png?raw=true)](https://delivops.com)
 
 # Static Website Hosting with S3, CloudFront, and ACM
 
