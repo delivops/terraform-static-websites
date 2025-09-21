@@ -22,10 +22,34 @@ variable "domain_name" {
 variable "cloudflare_zone_id" {
   description = "The DNS zone ID in which add the record. You can get this from the domain view in the cloudflare dashboard."
   type        = string
+  default     = ""
 }
 
 variable "logging_bucket" {
   description = "Logging Bucket"
   type        = string
   default     = ""
+}
+
+variable "use_route53" {
+  description = "Whether to use Route53 for DNS records instead of Cloudflare"
+  type        = bool
+  default     = false
+}
+
+variable "route53_zone_id" {
+  description = "The Route53 hosted zone ID where DNS records will be created (required if use_route53 is true)"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = !var.use_route53 || var.route53_zone_id != ""
+    error_message = "route53_zone_id is required when use_route53 is true."
+  }
+}
+
+variable "use_cloudflare" {
+  description = "Whether to use Cloudflare for DNS records (defaults to true for backward compatibility)"
+  type        = bool
+  default     = true
 }

@@ -2,23 +2,23 @@
 
 # Static Website Hosting with S3, CloudFront, and ACM
 
-This Terraform module sets up a static website hosted on AWS S3 and served through CloudFront with HTTPS using ACM, with DNS managed via Cloudflare.
+This Terraform module sets up a static website hosted on AWS S3 and served through CloudFront with HTTPS using ACM, with DNS managed via either Cloudflare or Route53.
 
 ## Features
 
 - S3 bucket for hosting static website content
 - CloudFront distribution for global delivery and HTTPS support
 - ACM certificate for SSL (via DNS validation)
-- Cloudflare DNS configuration for domain pointing
+- DNS configuration via Cloudflare or Route53
 - Versioning enabled for S3 bucket
 - Bucket policy restricts access to CloudFront only
 
 ## Resources Created
 
 - AWS S3 bucket (with website hosting configuration)
-- AWS ACM certificate (validated via Cloudflare DNS)
+- AWS ACM certificate (validated via DNS)
 - AWS CloudFront distribution
-- Cloudflare DNS records (ACM validation + CNAME to CloudFront)
+- DNS records for ACM validation and domain pointing (via Cloudflare or Route53)
 - IAM policy document for bucket access
 - S3 versioning and ownership controls
 
@@ -26,25 +26,70 @@ This Terraform module sets up a static website hosted on AWS S3 and served throu
 
 Ensure your `index.html` file is placed inside the S3 bucket after deployment to enable the website to load correctly.
 
+### Using Cloudflare (default)
+
 ```hcl
 module "static_website" {
   source = "./path-to-this-module"
 
   domain_name        = "yourdomain.com"
-  tags               = {
+  aws_region         = "us-west-2"
+  
+  # Cloudflare configuration (default)
+  use_cloudflare     = true
+  use_route53        = false
+  cloudflare_api_token = "your-cloudflare-api-token"
+  cloudflare_zone_id = "your-cloudflare-zone-id"
+  
+  logging_bucket     = "your-logging-bucket-name" // optional, set empty string to disable
+  
+  tags = {
     Environment = "production"
     Project     = "static-site"
   }
-  cloudflare_zone_id = "your-cloudflare-zone-id"
-  logging_bucket      = "your-logging-bucket-name" // optional, set empty string to disable
 }
 ```
+
+### Using Route53
+
+```hcl
+module "static_website" {
+  source = "./path-to-this-module"
+
+  domain_name        = "yourdomain.com"
+  aws_region         = "us-west-2"
+  
+  # Route53 configuration
+  use_route53        = true
+  use_cloudflare     = false
+  route53_zone_id    = "Z1D633PJN98FT9"
+  
+  # Cloudflare not needed when using Route53
+  cloudflare_api_token = ""
+  cloudflare_zone_id   = ""
+  
+  logging_bucket     = "your-logging-bucket-name" // optional, set empty string to disable
+  
+  tags = {
+    Environment = "production"
+    Project     = "static-site"
+  }
+}
+```
+
+## DNS Provider Selection
+
+- **Cloudflare**: Set `use_cloudflare = true` and `use_route53 = false` (default behavior)
+- **Route53**: Set `use_route53 = true` and `use_cloudflare = false`
+- You can enable both, but typically you'd only use one DNS provider per deployment
 
 ## Notes
 
 - The S3 bucket is private and only accessible through the CloudFront distribution.
-- Make sure to have Cloudflare API access configured for Terraform.
+- When using Cloudflare: Make sure to have Cloudflare API access configured for Terraform.
+- When using Route53: The Route53 hosted zone must already exist for your domain.
 - The ACM certificate is provisioned in the `us-east-1` region, as required by CloudFront.
+- Route53 uses an A record with alias pointing to CloudFront, while Cloudflare uses a CNAME.
 - You **must** upload an `index.html` to the S3 bucket after deploying the infrastructure.
 
 ## License
