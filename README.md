@@ -108,9 +108,9 @@ This module is released under the MIT License.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.67.0 |
-| <a name="provider_aws.virginia"></a> [aws.virginia](#provider\_aws.virginia) | >= 4.67.0 |
-| <a name="provider_cloudflare"></a> [cloudflare](#provider\_cloudflare) | ~> 3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.14.0 |
+| <a name="provider_aws.virginia"></a> [aws.virginia](#provider\_aws.virginia) | 6.14.0 |
+| <a name="provider_cloudflare"></a> [cloudflare](#provider\_cloudflare) | 3.35.0 |
 
 ## Modules
 
@@ -124,6 +124,8 @@ No modules.
 | [aws_acm_certificate_validation.cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) | resource |
 | [aws_cloudfront_distribution.dist](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_cloudfront_origin_access_identity.origin_access_identity](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity) | resource |
+| [aws_route53_record.acm_validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_route53_record.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket.bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_acl.bucket_acl](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl) | resource |
 | [aws_s3_bucket_ownership_controls.bucket_ownership_controls](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
@@ -140,10 +142,13 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | The AWS region to put the bucket into | `string` | n/a | yes |
 | <a name="input_cloudflare_api_token"></a> [cloudflare\_api\_token](#input\_cloudflare\_api\_token) | The Cloudflare API token for accessing Cloudfare | `string` | n/a | yes |
-| <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | The DNS zone ID in which add the record. You can get this from the domain view in the cloudflare dashboard. | `string` | n/a | yes |
+| <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | The DNS zone ID in which add the record. You can get this from the domain view in the cloudflare dashboard. | `string` | `""` | no |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | This is the domain name you want to use to point your website. (eg. example.com, www.example.com etc) | `string` | n/a | yes |
 | <a name="input_logging_bucket"></a> [logging\_bucket](#input\_logging\_bucket) | Logging Bucket | `string` | `""` | no |
+| <a name="input_route53_zone_id"></a> [route53\_zone\_id](#input\_route53\_zone\_id) | The Route53 hosted zone ID where DNS records will be created (required if use\_route53 is true) | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags you would like to apply across AWS resources. | `map(string)` | `{}` | no |
+| <a name="input_use_cloudflare"></a> [use\_cloudflare](#input\_use\_cloudflare) | Whether to use Cloudflare for DNS records (defaults to true for backward compatibility) | `bool` | `true` | no |
+| <a name="input_use_route53"></a> [use\_route53](#input\_use\_route53) | Whether to use Route53 for DNS records instead of Cloudflare | `bool` | `false` | no |
 
 ## Outputs
 
@@ -152,4 +157,8 @@ No modules.
 | <a name="output_aws_acm"></a> [aws\_acm](#output\_aws\_acm) | Attributes from aws\_acm\_certificate (https://www.terraform.io/docs/providers/aws/r/acm_certificate.html) |
 | <a name="output_aws_cloudfront"></a> [aws\_cloudfront](#output\_aws\_cloudfront) | Attributes from aws\_cloudfront\_distribution (https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html) |
 | <a name="output_aws_s3"></a> [aws\_s3](#output\_aws\_s3) | Attributes from aws\_s3\_bucket (https://www.terraform.io/docs/providers/aws/r/s3_bucket.html) |
+| <a name="output_cloudflare_acm_record"></a> [cloudflare\_acm\_record](#output\_cloudflare\_acm\_record) | Cloudflare ACM validation record (when using Cloudflare) |
+| <a name="output_cloudflare_main_record"></a> [cloudflare\_main\_record](#output\_cloudflare\_main\_record) | Cloudflare main domain record (when using Cloudflare) |
+| <a name="output_route53_main_record"></a> [route53\_main\_record](#output\_route53\_main\_record) | Route53 main domain record (when using Route53) |
+| <a name="output_route53_validation_record"></a> [route53\_validation\_record](#output\_route53\_validation\_record) | Route53 ACM validation record (when using Route53) |
 <!-- END_TF_DOCS -->
