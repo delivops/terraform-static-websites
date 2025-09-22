@@ -13,3 +13,23 @@ output "aws_acm" {
   value       = aws_acm_certificate.cert
   sensitive   = true
 }
+
+output "route53_validation_record" {
+  description = "Route53 ACM validation record (when using Route53)"
+  value       = var.use_route53 ? aws_route53_record.acm_validation[0] : null
+}
+
+output "route53_main_record" {
+  description = "Route53 main domain record (when using Route53)"
+  value       = var.use_route53 ? aws_route53_record.main[0] : null
+}
+
+output "cloudflare_acm_record" {
+  description = "Cloudflare ACM validation record (when using Cloudflare)"
+  value       = var.use_cloudflare ? cloudflare_record.acm[0] : null
+}
+
+output "cloudflare_main_record" {
+  description = "Cloudflare main domain record (when using Cloudflare)"
+  value       = var.use_cloudflare ? cloudflare_record.cname[0] : null
+}

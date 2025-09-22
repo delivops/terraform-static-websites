@@ -76,6 +76,7 @@ resource "aws_acm_certificate" "cert" {
 
 /* Cloudflare ACM validation record  */
 resource "cloudflare_record" "acm" {
+  count      = var.use_cloudflare ? 1 : 0
   depends_on = [aws_acm_certificate.cert]
 
   zone_id = var.cloudflare_zone_id
@@ -84,12 +85,30 @@ resource "cloudflare_record" "acm" {
   type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
 }
 
+/* Route53 ACM validation record */
+resource "aws_route53_record" "acm_validation" {
+  count   = var.use_route53 ? 1 : 0
+  depends_on = [aws_acm_certificate.cert]
+
+  zone_id = var.route53_zone_id
+  name    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name
+  records = [tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_value]
+  type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
+  ttl     = 300
+}
+
 /* ACM Validation after adding DNS record */
 resource "aws_acm_certificate_validation" "cert" {
   provider   = aws.virginia
   depends_on = [aws_acm_certificate.cert]
 
   certificate_arn = aws_acm_certificate.cert.arn
+  
+  validation_record_fqdns = var.use_route53 ? [
+    aws_route53_record.acm_validation[0].fqdn
+  ] : (var.use_cloudflare ? [
+    cloudflare_record.acm[0].hostname
+  ] : [])
 }
 
 /* Cloudfront distribution in front of S3 bucket */
@@ -172,10 +191,27 @@ resource "aws_cloudfront_distribution" "dist" {
 
 /* CNAME record to Cloudflare DNS points to the cloudfront distribution */
 resource "cloudflare_record" "cname" {
+  count      = var.use_cloudflare ? 1 : 0
   depends_on = [aws_cloudfront_distribution.dist]
 
   zone_id = var.cloudflare_zone_id
   name    = var.domain_name
   value   = aws_cloudfront_distribution.dist.domain_name
   type    = "CNAME"
+}
+
+/* Route53 record pointing to CloudFront distribution */
+resource "aws_route53_record" "main" {
+  count   = var.use_route53 ? 1 : 0
+  depends_on = [aws_cloudfront_distribution.dist]
+
+  zone_id = var.route53_zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.dist.domain_name
+    zone_id               = aws_cloudfront_distribution.dist.hosted_zone_id
+    evaluate_target_health = false
+  }
 }

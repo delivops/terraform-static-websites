@@ -14,3 +14,9 @@ variable "cloudflare_zone_id" {
   type        = string
   
 }
+
+variable "route53_zone_id" {
+  description = "The Route53 hosted zone ID where DNS records will be created (required when using Route53)"
+  type        = string
+  default     = ""
+}
