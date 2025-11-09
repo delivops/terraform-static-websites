@@ -87,7 +87,7 @@ resource "cloudflare_record" "acm" {
 
 /* Route53 ACM validation record */
 resource "aws_route53_record" "acm_validation" {
-  count   = var.use_route53 ? 1 : 0
+  count      = var.use_route53 ? 1 : 0
   depends_on = [aws_acm_certificate.cert]
 
   zone_id = var.route53_zone_id
@@ -103,11 +103,11 @@ resource "aws_acm_certificate_validation" "cert" {
   depends_on = [aws_acm_certificate.cert]
 
   certificate_arn = aws_acm_certificate.cert.arn
-  
+
   validation_record_fqdns = var.use_route53 ? [
     aws_route53_record.acm_validation[0].fqdn
-  ] : (var.use_cloudflare ? [
-    cloudflare_record.acm[0].hostname
+    ] : (var.use_cloudflare ? [
+      cloudflare_record.acm[0].hostname
   ] : [])
 }
 
@@ -150,10 +150,15 @@ resource "aws_cloudfront_distribution" "dist" {
     }
   }
 
-  custom_error_response {
-    response_page_path = "/index.html"
-    error_code         = 403
-    response_code      = 200
+  # Custom error responses for better error handling
+  # Default: 403 and 404 redirect to index.html (SPA support)
+  dynamic "custom_error_response" {
+    for_each = var.error_responses
+    content {
+      error_code         = custom_error_response.key
+      response_page_path = custom_error_response.value.response_page_path
+      response_code      = custom_error_response.value.response_code
+    }
   }
 
   default_cache_behavior {
@@ -161,24 +166,19 @@ resource "aws_cloudfront_distribution" "dist" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "s3-${var.domain_name}"
 
-    forwarded_values {
-      query_string = false
+    # Using AWS Managed Cache Policy: CachingOptimized
+    # This replaces the deprecated forwarded_values block
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 
-      cookies {
-        forward = "none"
-      }
-    }
+    # Enable compression (gzip, brotli) automatically
+    compress = true
 
     viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
 
-    // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-response-headers-policies.html
-    // the id for "CORS-With-Preflight" response policy
+    # CORS-With-Preflight response headers policy
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-response-headers-policies.html
     response_headers_policy_id = "5cc3b908-e619-4b99-88e5-2cf7f45965bd"
-
-
   }
 
   viewer_certificate {
@@ -202,7 +202,7 @@ resource "cloudflare_record" "cname" {
 
 /* Route53 record pointing to CloudFront distribution */
 resource "aws_route53_record" "main" {
-  count   = var.use_route53 ? 1 : 0
+  count      = var.use_route53 ? 1 : 0
   depends_on = [aws_cloudfront_distribution.dist]
 
   zone_id = var.route53_zone_id
@@ -211,7 +211,7 @@ resource "aws_route53_record" "main" {
 
   alias {
     name                   = aws_cloudfront_distribution.dist.domain_name
-    zone_id               = aws_cloudfront_distribution.dist.hosted_zone_id
+    zone_id                = aws_cloudfront_distribution.dist.hosted_zone_id
     evaluate_target_health = false
   }
 }
