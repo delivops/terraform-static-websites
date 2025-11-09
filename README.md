@@ -226,8 +226,9 @@ This module is released under the MIT License.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.67.0 |
-| <a name="requirement_cloudflare"></a> [cloudflare](#requirement\_cloudflare) | ~> 3.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
+| <a name="requirement_cloudflare"></a> [cloudflare](#requirement\_cloudflare) | ~> 4.0 |
 
 ## Providers
 
@@ -253,6 +254,7 @@ No modules.
 | [aws_route53_record.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket.bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_acl.bucket_acl](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl) | resource |
+| [aws_s3_bucket_lifecycle_configuration.bucket_lifecycle](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration) | resource |
 | [aws_s3_bucket_ownership_controls.bucket_ownership_controls](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
 | [aws_s3_bucket_policy.bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_versioning.bucket_versioning](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
@@ -269,21 +271,28 @@ No modules.
 | <a name="input_cloudflare_api_token"></a> [cloudflare\_api\_token](#input\_cloudflare\_api\_token) | The Cloudflare API token for accessing Cloudfare (only required when use\_cloudflare = true) | `string` | `""` | no |
 | <a name="input_cloudflare_zone_id"></a> [cloudflare\_zone\_id](#input\_cloudflare\_zone\_id) | The DNS zone ID in which add the record. You can get this from the domain view in the cloudflare dashboard. | `string` | `""` | no |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | This is the domain name you want to use to point your website. (eg. example.com, www.example.com etc) | `string` | n/a | yes |
+| <a name="input_error_responses"></a> [error\_responses](#input\_error\_responses) | Map of error codes to error page paths. Supports custom error handling for different HTTP status codes. | <pre>map(object({<br/>    response_page_path = string<br/>    response_code      = number<br/>  }))</pre> | <pre>{<br/>  "403": {<br/>    "response_code": 200,<br/>    "response_page_path": "/index.html"<br/>  },<br/>  "404": {<br/>    "response_code": 200,<br/>    "response_page_path": "/index.html"<br/>  }<br/>}</pre> | no |
 | <a name="input_logging_bucket"></a> [logging\_bucket](#input\_logging\_bucket) | Logging Bucket | `string` | `""` | no |
 | <a name="input_route53_zone_id"></a> [route53\_zone\_id](#input\_route53\_zone\_id) | The Route53 hosted zone ID where DNS records will be created (required if use\_route53 is true) | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags you would like to apply across AWS resources. | `map(string)` | `{}` | no |
 | <a name="input_use_cloudflare"></a> [use\_cloudflare](#input\_use\_cloudflare) | Whether to use Cloudflare for DNS records | `bool` | `false` | no |
 | <a name="input_use_route53"></a> [use\_route53](#input\_use\_route53) | Whether to use Route53 for DNS records | `bool` | `true` | no |
+| <a name="input_version_retention_days"></a> [version\_retention\_days](#input\_version\_retention\_days) | Number of days to keep old object versions. Set to 0 to disable lifecycle rules. | `number` | `90` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| <a name="output_acm_certificate_arn"></a> [acm\_certificate\_arn](#output\_acm\_certificate\_arn) | The ARN of the ACM certificate |
 | <a name="output_aws_acm"></a> [aws\_acm](#output\_aws\_acm) | Attributes from aws\_acm\_certificate (https://www.terraform.io/docs/providers/aws/r/acm_certificate.html) |
 | <a name="output_aws_cloudfront"></a> [aws\_cloudfront](#output\_aws\_cloudfront) | Attributes from aws\_cloudfront\_distribution (https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html) |
 | <a name="output_aws_s3"></a> [aws\_s3](#output\_aws\_s3) | Attributes from aws\_s3\_bucket (https://www.terraform.io/docs/providers/aws/r/s3_bucket.html) |
 | <a name="output_cloudflare_acm_record"></a> [cloudflare\_acm\_record](#output\_cloudflare\_acm\_record) | Cloudflare ACM validation record (when using Cloudflare) |
 | <a name="output_cloudflare_main_record"></a> [cloudflare\_main\_record](#output\_cloudflare\_main\_record) | Cloudflare main domain record (when using Cloudflare) |
+| <a name="output_cloudfront_distribution_domain_name"></a> [cloudfront\_distribution\_domain\_name](#output\_cloudfront\_distribution\_domain\_name) | The domain name of the CloudFront distribution |
+| <a name="output_cloudfront_distribution_id"></a> [cloudfront\_distribution\_id](#output\_cloudfront\_distribution\_id) | The ID of the CloudFront distribution (use for cache invalidations) |
 | <a name="output_route53_main_record"></a> [route53\_main\_record](#output\_route53\_main\_record) | Route53 main domain record (when using Route53) |
 | <a name="output_route53_validation_record"></a> [route53\_validation\_record](#output\_route53\_validation\_record) | Route53 ACM validation record (when using Route53) |
+| <a name="output_s3_bucket_arn"></a> [s3\_bucket\_arn](#output\_s3\_bucket\_arn) | The ARN of the S3 bucket |
+| <a name="output_s3_bucket_name"></a> [s3\_bucket\_name](#output\_s3\_bucket\_name) | The name of the S3 bucket |
 <!-- END_TF_DOCS -->
